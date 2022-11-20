@@ -1,6 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/LuaQProf/Editor/LuaQProfMainWin.uss?fileID=7433441132597879392&amp;guid=118a994f151b5493c9acfd9f950bb0b6&amp;type=3#LuaQProfMainWin" />
-    <ui:Button text="Snapshot in c#" display-tooltip-when-elided="true" name="btnSnapshotCs" />
+    <ui:Button text="Snapshot" display-tooltip-when-elided="true" name="btnSnapshotCs" />
     <ui:Button text="Diff" display-tooltip-when-elided="true" name="btnDiff" />
     <ui:GroupBox style="flex-direction: row; height: 200px;">
         <ui:ListView focusable="true" name="listSnapshots" fixed-item-height="20" show-border="true" style="font-size: 12px; width: 520px; height: 180px;" />

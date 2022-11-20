@@ -1,33 +1,33 @@
-local luaqprof = {}
+local qsnapshot = {}
 
-rawset(_G, 'luaqprof', luaqprof)
+rawset(_G, 'qsnapshot', qsnapshot)
 
-local weak_meta_table = {__mode = 'k', __ignore_luaqprof = true}
-setmetatable(luaqprof, weak_meta_table)
+local weak_meta_table = {__mode = 'k', __ignore_qsnapshot = true}
+setmetatable(qsnapshot, weak_meta_table)
 
 
--- luaqprof.test = function()
+-- qsnapshot.test = function()
 --     local a ={}
 --     setmetatable(a, weak_meta_table)
 --     return getmetatable(a)
 -- end
 
 
-luaqprof.get_metatable = function(t)
+qsnapshot.get_metatable = function(t)
     return getmetatable(t)
 end
 
-luaqprof.get_registry = function()
+qsnapshot.get_registry = function()
     return debug.getregistry()
 end
 
-luaqprof.get_func_source = function(func)
+qsnapshot.get_func_source = function(func)
     local info = debug.getinfo(func, 'Sl')
     local result = string.format('func:%s&line:%d', info.source, info.linedefined)
     return result
 end
    
-luaqprof.get_memory_usage = function()
+qsnapshot.get_memory_usage = function()
     return math.floor(collectgarbage("count"))
 end
-return luaqprof
+return qsnapshot

@@ -31,12 +31,12 @@ namespace QSnapshot
         public override void OnOpen()
         {
 
-            var visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/LuaQProf/Editor/SelectSnapshot.uxml");
+            var visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/q-snapshot/Editor/SelectSnapshot.uxml");
             tree = visualTreeAsset.Instantiate();
             editorWindow.rootVisualElement.Add(tree);
 
             var snapshots = mainWin.snapshots;
-
+            
             //fill dropdowns
             var choices = new List<string>{};
             foreach (var ss in snapshots) {
@@ -75,6 +75,7 @@ namespace QSnapshot
             var oldSnapshotValue = tree.Q<DropdownField>("oldSnapshot").value;
             var newSnapshotValue = tree.Q<DropdownField>("newSnapshot").value;
             var snapshots = mainWin.snapshots;
+           
             SnapshotData oldSnapshot = null;
             SnapshotData newSnapshot = null;
             foreach (var ss in snapshots) {

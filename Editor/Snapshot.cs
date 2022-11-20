@@ -161,12 +161,12 @@ namespace QSnapshot
 
 
         public static bool call_lua(System.IntPtr L, string func_name, int argn, int resultn) {
-            lua_getglobal(L, "luaqprof");
+            lua_getglobal(L, "qsnapshot");
 
             LuaAPI.lua_pushstring(L, func_name);
             LuaAPI.lua_rawget(L, -2);
 
-            //remove luaqprof
+            //remove qsnapshot
             LuaAPI.lua_remove(L, -2);
 
             //move function under args
@@ -353,9 +353,6 @@ namespace QSnapshot
             }
             return System.IntPtr.Zero;
         }
-
-
-
 
         public static void lua_getglobal(System.IntPtr L, string name) {
             //为了避免触发global table 的metable 事件，所以不能直接使用xlua_getglobal方法

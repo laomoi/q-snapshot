@@ -24,6 +24,38 @@ public static LuaEnv getLuaEnv() {
 
 ### 使用方法：
 
-菜单中选中: 扩展/qsnapshot-内存镜像
-在游戏运行时，点击"Snapshot in c#" 抓取内存镜像，随后可以对多个镜像进行 "Snapshot diff"
+先运行游戏
+
+菜单中选中: 扩展/q-snapshot
+
+![](./docs/pic1.png)
+
+![]./(docs/pic2.png)
+
+
+镜像对比后会把结果输出一个临时文件txt，并自动打开。
+
+结果大概如下：
+
+```
+summary:
+leak objects count:105
+
+
+leak:[t]105553238428864
+<--([val]_attachLayers)--[t]105553173003328<--([val]loaded)--[t]105553173002176<--([upv])--[f]func:=[C]&line:-1<--([val]require)--[t]105553173001536<--([val][n]7)--[R]
+```
+
+对这个泄露对象的解读是这样的：
+
+从最右边往左看， R(registry)表开始，
+R[7]['require']是一个匿名函数,它的upvalue里匿名引用了table(105553173002176), 假设table为t,
+那么t['loaded]['_attachLayers'] 指向了被泄露对象 [t]105553238428864
+
+
+<--(引用方式)--  通常有upvalue引用([upv]),  表的key引用([key]), 表的key指向的value([val]key的名字)
+[t]表示表格, [n]是数字, [f]是函数
+
+
+
 
