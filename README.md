@@ -12,6 +12,8 @@ public static LuaEnv getLuaEnv() {
     return GlobalLuaEnv.Instance.LuaEnv;
 }
 
+把q-snapshot文件夹拷贝入Unity工程Assets目录。
+
 
 ### 使用方法：
 
