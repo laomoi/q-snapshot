@@ -1,6 +1,14 @@
-一个小而美的工具，在unity+xlua环境下，生成lua对象的内存快照，并支持2个快照之间做diff，用来查找对象泄露。
+一个简单的Lua内存快照对比具，用来查找对象泄露。
+
+### 适用环境：
+
+unity+xlua
+
+通用于win+mac平台
 
 ### 使用前准备：
+
+把q-snapshot文件夹拷贝入Unity工程Assets目录。
 
 Snapshot.cs最下面有2个静态函数，是用来取得当前运行中的LuaEnv对象和L指针，请根据自己项目修改这2个静态函数的实现代码。
 
@@ -12,7 +20,6 @@ public static LuaEnv getLuaEnv() {
     return GlobalLuaEnv.Instance.LuaEnv;
 }
 
-把q-snapshot文件夹拷贝入Unity工程Assets目录。
 
 
 ### 使用方法：
