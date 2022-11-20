@@ -30,7 +30,7 @@ public static LuaEnv getLuaEnv() {
 
 ![](./docs/pic1.png)
 
-![]./(docs/pic2.png)
+![](./docs/pic2.png)
 
 
 镜像对比后会把结果输出一个临时文件txt，并自动打开。
@@ -53,8 +53,24 @@ R[7]['require']是一个匿名函数,它的upvalue里匿名引用了table(105553
 那么t['loaded]['_attachLayers'] 指向了被泄露对象 [t]105553238428864
 
 
-<--(引用方式)--  通常有upvalue引用([upv]),  表的key引用([key]), 表的key指向的value([val]key的名字)
-[t]表示表格, [n]是数字, [f]是函数
+### 格式说明
+
+```
+子对象 <--(引用方式)-- 父对象 
+```
+
+引用方式的取值： 
+   * upvalue引用([upv]) 
+   * 表的key引用([key])
+   * 表的key指向的value([val]key的描述)， key的描述如果是[n],表示它是数组key, 否则为字典key
+   * metatable引用([meta])
+
+对象的取值：
+   * [t]表示table， 特殊情况下如果table含有 __class_name这个key, 将自动识别为[class]
+   * [u]表示userdata
+   * [f]表示函数
+
+
 
 
 
