@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:GroupBox style="flex-direction: row;">
+        <ui:DropdownField label="old " index="-1" choices="System.Collections.Generic.List`1[System.String]" name="oldSnapshot" style="flex-direction: column; height: 34px; width: 216px;" />
+        <ui:Label display-tooltip-when-elided="true" style="-unity-text-align: middle-center;" />
+        <ui:DropdownField label="new" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="newSnapshot" style="flex-direction: column; height: 36px; width: 194px;" />
+    </ui:GroupBox>
+    <ui:Button text="Diff now!" display-tooltip-when-elided="true" name="btnDiffNow" style="font-size: 14px;" />
+</ui:UXML>
