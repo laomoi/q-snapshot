@@ -44,20 +44,20 @@ namespace QSnapshot
         }
 
         private void OnInit() {
-            var L = Snapshot.getLuaEnvL();
+            var L = Snapshot.GetLuaEnvL();
             if (L == System.IntPtr.Zero) {
                 Debug.Log("no lua env found");
                 return;
             }
 
             string text = System.IO.File.ReadAllText(Application.dataPath + "/q-snapshot/Editor/snapshot.lua");
-            Snapshot.getLuaEnv().DoString(text);
+            Snapshot.GetLuaEnv().DoString(text);
             Debug.Log("register lua functions done");
         }
 
         public List<SnapshotData> snapshots = new List<SnapshotData>();
         private void OnSnapshotInCs() {
-            var L = Snapshot.getLuaEnvL();
+            var L = Snapshot.GetLuaEnvL();
             if (L == System.IntPtr.Zero) {
                 Debug.Log("no lua env found");
                 return;

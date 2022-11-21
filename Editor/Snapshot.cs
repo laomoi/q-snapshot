@@ -85,7 +85,7 @@ namespace QSnapshot
         }
 
         protected void traverseChain(System.IntPtr p, List<string> allPath, List<string> path, string refDesc) {
-            if (path.Count > 20) {
+            if (path.Count > 50) {
                 //发现环？ 结束
                 allPath.Add("too Long path:" + String.Join("", path) );
                 return;
@@ -134,7 +134,7 @@ namespace QSnapshot
                 return null;
             }
 
-            GlobalLuaEnv.Instance.LuaEnv.FullGc();
+            Snapshot.FullGC();
 
             var data = new SnapshotData();
             data.objects = new Dictionary<System.IntPtr, ObjectData>();
@@ -178,7 +178,7 @@ namespace QSnapshot
             int oldTop = LuaAPI.lua_gettop(L);
             if (
             LuaAPI.lua_pcall(L, argn, resultn, 0) != 0 ) {
-                Snapshot.getLuaEnv().ThrowExceptionFromError(oldTop);
+                Snapshot.GetLuaEnv().ThrowExceptionFromError(oldTop);
                 LuaAPI.lua_settop(L, oldTop);
                 return false;
             } else {
@@ -386,10 +386,19 @@ namespace QSnapshot
             return str;
         }
 
-        public static System.IntPtr getLuaEnvL() {
+
+        public static void FullGC() {
+            Snapshot.GetLuaEnv().FullGc();
+            Snapshot.GetLuaEnv().Tick();
+
+            System.GC.Collect();
+            System.GC.WaitForPendingFinalizers();
+        }
+
+        public static System.IntPtr GetLuaEnvL() {
             return GlobalLuaEnv.Instance.GetRawLuaL();
         }
-        public static LuaEnv getLuaEnv() {
+        public static LuaEnv GetLuaEnv() {
             return GlobalLuaEnv.Instance.LuaEnv;
         }
     }

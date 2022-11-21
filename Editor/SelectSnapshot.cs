@@ -123,7 +123,7 @@ namespace QSnapshot
             }
 
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine("summary:").AppendLine("leak objects count:" + leakKeys.Count).AppendLine();
+            sb.AppendLine("summary:").AppendLine("leak objects count:" + leakKeys.Count + ", total related leak objs:" + keys.Count ).AppendLine();
 
             foreach (var objKey in leakKeys) {
                 var obj = newSs.objects[objKey];
