@@ -22,22 +22,31 @@ namespace QSnapshot
         public RefType type;
         public string desc;
 
-        public RefInfo(RefType refType, string refDesc)
+        public System.IntPtr related = System.IntPtr.Zero;
+
+        public RefInfo(RefType refType, string refDesc="")
         {
             type = refType;
             desc = refDesc;
         }
 
-        public override string ToString()
+        public string getDesc(SnapshotData ss)
         {
+            var finalDesc = desc;
+            if (related != System.IntPtr.Zero) {
+                if (ss.objects.ContainsKey(related)) {
+                    finalDesc = ss.objects[related].getDesc(related, ss);
+                }
+            }
+
             if (RefType.TABLE_KEY == type) {
                 return "[key]";
             }else if (RefType.TABLE_VALUE == type) {
-                return "[val]" + desc;
+                return "[val]" + finalDesc;
             }else if (RefType.METATABLE == type) {
                 return "[meta]";
             }else if (RefType.UPVALUE == type) {
-                return "[upv]" + desc;
+                return "[upv]" + finalDesc;
             }
 
             return "";
@@ -88,7 +97,7 @@ namespace QSnapshot
                 }
             }else if ( type == LuaTypes.LUA_TFUNCTION) {
                 if (ss.sources.ContainsKey(p)) {
-                    return "[f]"  + ss.sources[p] + this.tag;
+                    return "[f]"  + ss.sources[p] + this.tag + p.ToString();
                 }
                
                 return "[f]" + p.ToString();
@@ -110,7 +119,6 @@ namespace QSnapshot
         public System.IntPtr registryTable;
         public System.IntPtr loadedTable;
         public SnapshotSetting setting;
-        public Dictionary<int, string> typeid2TypeNameMap;
 
         public override string ToString() {
             return "ss-" + this.snapshotTime.ToLongTimeString().ToString() + '-' + "mem-" + memoryUsage+ '-' + "objs-" + objects.Count; 
@@ -141,7 +149,7 @@ namespace QSnapshot
                 foreach (var item in parents) {
                     var parent = item.Key;
                     var parentRef = item.Value;
-                    var parentRefDesc = parentRef.ToString();
+                    var parentRefDesc = parentRef.getDesc(this);
                     var oldCount = path.Count;
                     path.Add("<--(" + parentRefDesc + ")--" + this.objects[parent].getDesc(parent, this) );
                     traverseChain(parent, allPath, path, parentRefDesc, maxPathLength, maxPathCount);
@@ -211,7 +219,7 @@ namespace QSnapshot
 
             //start traverse
             data.snapshotTime = DateTime.Now;
-            Snapshot.traverse_table(L, data, System.IntPtr.Zero, RefType.REGISTRY);
+            Snapshot.traverse_object(L, data, System.IntPtr.Zero, new RefInfo(RefType.REGISTRY));
             LuaAPI.lua_pop(L, 1);
             return data;
         }
@@ -243,8 +251,8 @@ namespace QSnapshot
         }       
 
 
-        public static void traverse_function(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefType refType, string refDesc){
-            var p = Snapshot.mark_object(L, data, parent, refType, refDesc);
+        public static void traverse_function(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefInfo refInfo){
+            var p = Snapshot.mark_object(L, data, parent, refInfo);
             if (p == System.IntPtr.Zero) {
                 return;
             }
@@ -277,14 +285,14 @@ namespace QSnapshot
                     break;
                 }
                 string str = Marshal.PtrToStringAuto(name);
-                Snapshot.traverse_object(L, data, p, RefType.UPVALUE, str);
+                Snapshot.traverse_object(L, data, p, new RefInfo(RefType.UPVALUE, str));
                 LuaAPI.lua_pop(L, 1);
             }
         }
 
 
-        public static void traverse_userdata(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefType refType, string refDesc){
-            var p = Snapshot.mark_object(L, data, parent, refType, refDesc);
+        public static void traverse_userdata(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefInfo refInfo){
+            var p = Snapshot.mark_object(L, data, parent, refInfo);
             if (p == System.IntPtr.Zero) {
                 return;
             }
@@ -301,7 +309,7 @@ namespace QSnapshot
                     }
                     LuaAPI.lua_pop(L, 1);// type name
 
-                    Snapshot.traverse_table(L, data, p, RefType.METATABLE);
+                    Snapshot.traverse_table(L, data, p, new RefInfo(RefType.METATABLE));
                 }
 
                 
@@ -309,6 +317,13 @@ namespace QSnapshot
             }
         }
 
+        protected static System.IntPtr get_lua_pointer(System.IntPtr L, int index) {
+            var t =  LuaAPI.lua_type(L, index);
+            if ( t == LuaTypes.LUA_TUSERDATA ||  t == LuaTypes.LUA_TTABLE) {
+                return LuaAPI.lua_topointer(L, index);
+            }
+            return System.IntPtr.Zero;
+        }
         public static string get_key_desc(System.IntPtr L){
             var t =  LuaAPI.lua_type(L, -1);
             if ( t == LuaTypes.LUA_TNUMBER) {
@@ -329,8 +344,8 @@ namespace QSnapshot
             }
         }
 
-        public static void traverse_table(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefType refType, string refDesc=""){
-            var p = Snapshot.mark_object(L, data, parent, refType, refDesc);
+        public static void traverse_table(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefInfo refInfo){
+            var p = Snapshot.mark_object(L, data, parent, refInfo);
             if (p == System.IntPtr.Zero) {
                 return;
             }
@@ -341,7 +356,7 @@ namespace QSnapshot
             LuaAPI.lua_pushvalue(L, -1);
             if (Snapshot.call_lua(L, "get_metatable", 1, 1) ) {
                 if (!LuaAPI.lua_isnil(L, -1)) {
-                    Snapshot.traverse_table(L, data, p, RefType.METATABLE);
+                    Snapshot.traverse_table(L, data, p, new RefInfo(RefType.METATABLE));
                     LuaAPI.lua_pushstring(L, "__mode");
                     LuaAPI.lua_rawget(L, -2);
                     if (!LuaAPI.lua_isnil(L, -1)) {
@@ -366,34 +381,38 @@ namespace QSnapshot
                 //v, k , T
                 LuaAPI.lua_insert(L, -2); //k, v, T
                 var key_desc = Snapshot.get_key_desc(L);
+                var key_pointer = get_lua_pointer(L, -1);
+
                 LuaAPI.lua_insert(L, -2); //v, k, T
 
                 if (!weakv) {
-                    Snapshot.traverse_object(L, data, p, RefType.TABLE_VALUE, key_desc);
+                    RefInfo keyRefInfo = new RefInfo(RefType.TABLE_VALUE, key_desc);
+                    keyRefInfo.related = key_pointer;//save the key pointer into the refInfo
+                    Snapshot.traverse_object(L, data, p, keyRefInfo);
                 }
                 LuaAPI.lua_pop(L, 1);
 
                 if (!weakk) {
-                    Snapshot.traverse_object(L, data, p, RefType.TABLE_KEY);
+                    Snapshot.traverse_object(L, data, p, new RefInfo(RefType.TABLE_KEY));
                 }
 
             }
         }
 
 
-        public static void traverse_object(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefType refType, string refDesc=""){
+        public static void traverse_object(System.IntPtr L, SnapshotData data, System.IntPtr parent, RefInfo refInfo){
             var t =  LuaAPI.lua_type(L, -1);
             if (t == LuaTypes.LUA_TTABLE ){
-                Snapshot.traverse_table(L, data, parent, refType, refDesc);
+                Snapshot.traverse_table(L, data, parent, refInfo);
             } else if (t == LuaTypes.LUA_TFUNCTION) {
-                Snapshot.traverse_function(L, data, parent, refType, refDesc);
+                Snapshot.traverse_function(L, data, parent, refInfo);
             } else if ( t == LuaTypes.LUA_TUSERDATA) {
-                Snapshot.traverse_userdata(L, data, parent, refType, refDesc);
+                Snapshot.traverse_userdata(L, data, parent, refInfo);
             }
         }
 
 
-        public static System.IntPtr mark_object(System.IntPtr L,  SnapshotData data, System.IntPtr parent, RefType refType, string refDesc) {       
+        public static System.IntPtr mark_object(System.IntPtr L,  SnapshotData data, System.IntPtr parent, RefInfo refInfo) {       
             if (LuaAPI.lua_isnil(L, -1)) {
                 return System.IntPtr.Zero;
             }
@@ -438,9 +457,9 @@ namespace QSnapshot
                 first_mark = true;                
             }
             if (parent != System.IntPtr.Zero) {
-                data.objects[p].parents[parent] = new RefInfo(refType, refDesc);
-                if (parent == data.loadedTable && refType == RefType.TABLE_VALUE) {
-                    data.objects[p].requirePath = refDesc;
+                data.objects[p].parents[parent] = refInfo;
+                if (parent == data.loadedTable && refInfo.type == RefType.TABLE_VALUE) {
+                    data.objects[p].requirePath = refInfo.desc;
                 }
             }
             if (first_mark){

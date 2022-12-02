@@ -63,9 +63,16 @@ end
 
 qsnapshot.get_table_tag = function(t)
     --add tag to table 
-    if t ~= nil and rawget(t, "__class_name") ~= nil then
-        return rawget(t, "__class_name") 
+    if t ~= nil then
+        local cls = rawget(t, "__class_name")
+        local id = rawget(t, "id")
+        local tag = nil
+        if cls ~= nil then
+            tag = "cls:" .. cls
+        end
+        return tag
     end
+
     return nil
 end
 

@@ -152,9 +152,9 @@ namespace QSnapshot
 
             foreach (var objKey in leakKeys) {
                 var obj = newSs.objects[objKey];
-
+                sb.Append("leak:").AppendLine(newSs.objects[objKey].getDesc(objKey, newSs));
                 var chainDesc = newSs.getRefChain(objKey, setting.maxPathLength, setting.maxPathCount);
-                sb.Append("leak:").AppendLine(newSs.objects[objKey].getDesc(objKey, newSs)).AppendLine(chainDesc).AppendLine();
+                sb.AppendLine(chainDesc).AppendLine();
                 if ( sb.Length > 100000 ) {
                     writer.Write(sb.ToString());
                     sb.Clear();
