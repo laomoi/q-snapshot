@@ -1,8 +1,23 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:Button text="Snapshot" display-tooltip-when-elided="true" name="btnSnapshotCs" />
-    <ui:Button text="Diff" display-tooltip-when-elided="true" name="btnDiff" />
-    <ui:GroupBox style="flex-direction: row; height: 200px;">
-        <ui:ListView focusable="true" name="listSnapshots" fixed-item-height="20" show-border="true" style="font-size: 12px; width: 520px; height: 180px;" />
-        <ui:VisualElement />
+    <ui:GroupBox style="flex-direction: row;">
+        <ui:GroupBox>
+            <ui:GroupBox style="border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 0; height: 121px; width: 222px; -unity-text-outline-width: 0; background-color: rgb(84, 82, 82);">
+                <ui:Label text="Snapshot" display-tooltip-when-elided="true" />
+                <ui:GroupBox style="flex-direction: row; flex-wrap: wrap; border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                    <ui:Toggle label="custom tag  when snapshot" value="true" name="chkTag" tooltip="add custom tag on table/userdata when capturing snapshot.(by modifying snapshot.lua)" style="height: 26px; align-items: center; justify-content: flex-start; flex-direction: row-reverse; width: 184px;" />
+                </ui:GroupBox>
+                <ui:Button text="Snapshot" display-tooltip-when-elided="true" name="btnSnapshotCs" style="height: 23px; width: 210px;" />
+            </ui:GroupBox>
+            <ui:GroupBox style="border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; height: 121px; width: 222px; background-color: rgb(85, 83, 83);">
+                <ui:Label text="Diff" display-tooltip-when-elided="true" />
+                <ui:GroupBox style="flex-direction: row; flex-wrap: wrap; border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                    <ui:Toggle label="filter require" value="true" name="chkFilterRequire" tooltip="filter the require table in leaking objects" style="height: 21px; align-items: center; justify-content: space-between; flex-direction: row-reverse; width: 171px; -unity-text-align: middle-left;" />
+                </ui:GroupBox>
+                <ui:Button text="Diff" display-tooltip-when-elided="true" name="btnDiff" style="height: 25px; width: 206px;" />
+            </ui:GroupBox>
+        </ui:GroupBox>
+        <ui:GroupBox style="flex-direction: row; height: auto; width: auto;">
+            <ui:ListView focusable="true" name="listSnapshots" fixed-item-height="20" show-border="true" style="font-size: 12px; width: 280px; height: 253px;" />
+        </ui:GroupBox>
     </ui:GroupBox>
 </ui:UXML>

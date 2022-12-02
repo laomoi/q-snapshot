@@ -13,6 +13,8 @@ namespace QSnapshot
         //Set the window size
         protected SnapshotMainWindow mainWin;
         protected VisualElement tree;
+
+
         public override Vector2 GetWindowSize()
         {
             return new Vector2(441, 106);
@@ -96,11 +98,14 @@ namespace QSnapshot
 
         protected void diffSnapshot(SnapshotData oldSs, SnapshotData newSs) {
             //added = leak
+            DiffSetting setting = mainWin.getDiffSetting();            
+            var filterRequireCount = 0;
+
             var keys = newSs.objects.Keys;
             Dictionary<System.IntPtr, bool> dictAddKeys = new Dictionary<System.IntPtr, bool>(); 
             List<System.IntPtr> addKeys = new List<System.IntPtr>(); 
             foreach(var objKey in keys) {
-                if (!oldSs.objects.ContainsKey(objKey)) {
+                if (!oldSs.objects.ContainsKey(objKey)) {                    
                     addKeys.Add(objKey);
                     dictAddKeys[objKey] = true;
                 }
@@ -109,7 +114,8 @@ namespace QSnapshot
             //泄露的对象里剔除掉二级泄露的对象（比如由于某个对象泄露，它引用的所有内部属性也泄露了，这些属于二级泄露）
             List<System.IntPtr> leakKeys = new List<System.IntPtr>(); 
             foreach(var objKey in addKeys) {
-                var parents = newSs.objects[objKey].parents;
+                var obj = newSs.objects[objKey];
+                var parents = obj.parents;
                 bool isDirectLeak = false;
                 foreach(var parent in parents) {
                     if (!dictAddKeys.ContainsKey(parent.Key)) {
@@ -118,21 +124,44 @@ namespace QSnapshot
                     }
                 }
                 if (isDirectLeak) {
+                    if (setting.filterRequire && obj.requirePath != "") {
+                        filterRequireCount++;
+                        continue;
+                    }
                     leakKeys.Add(objKey);
                 }
             }
 
-            var sb = new System.Text.StringBuilder();
-            sb.AppendLine("summary:").AppendLine("leak objects count:" + leakKeys.Count + ", total related leak objs:" + keys.Count ).AppendLine();
-
-            foreach (var objKey in leakKeys) {
-                var obj = newSs.objects[objKey];
-                var chainDesc = newSs.getRefChain(objKey);
-                sb.Append("leak:").AppendLine(newSs.objects[objKey].getDesc(objKey, newSs)).AppendLine(chainDesc).AppendLine();
-            }
+            
 
             var tmpPath = FileUtil.GetUniqueTempPathInProject() + ".txt";
             StreamWriter writer = new StreamWriter(tmpPath, false);
+
+            var sb = new System.Text.StringBuilder();
+            
+          
+
+            sb.AppendLine("summary:").AppendLine("leak objects count:" + leakKeys.Count);
+            if (setting.filterRequire){
+                sb.AppendLine("filter required count:" + filterRequireCount);
+            }
+            sb.AppendLine();
+
+            // sb.AppendLine("total related leak objs:" + keys.Count).AppendLine();
+
+
+            foreach (var objKey in leakKeys) {
+                var obj = newSs.objects[objKey];
+
+                var chainDesc = newSs.getRefChain(objKey, setting.maxPathLength, setting.maxPathCount);
+                sb.Append("leak:").AppendLine(newSs.objects[objKey].getDesc(objKey, newSs)).AppendLine(chainDesc).AppendLine();
+                if ( sb.Length > 100000 ) {
+                    writer.Write(sb.ToString());
+                    sb.Clear();
+                }
+            }
+
+            
             writer.Write(sb.ToString());
             writer.Close();
             EditorUtility.OpenWithDefaultApp(tmpPath);
