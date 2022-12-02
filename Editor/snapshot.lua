@@ -14,31 +14,6 @@ qsnapshot.get_registry = function()
     return debug.getregistry()
 end
 
-qsnapshot.get_type_name = function(typeid)
-    local r = debug.getregistry()
-    if r then
-        local meta = rawget(r, typeid)
-        if meta ~= nil then
-            local typeName = rawget(r, meta)
-            if typeName ~= nil then
-                return "type:" .. typeName
-            end
-            return "nil typename"
-        end
-    end
-    return "!!nil"
-end
-
-qsnapshot.dump_r = function(path)
-    -- Opens a file in append mode
-
-    local r = debug.getregistry()
-    for k,v in pairs(r) do
-        print(tostring(k) .. ":" .. tostring(v))
-    end
-
-end
-
 qsnapshot.get_package_loaded = function()
     if package ~= nil and package.loaded ~= nil then
         return package.loaded
