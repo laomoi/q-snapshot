@@ -83,8 +83,8 @@ leak:[t]105553927449984
 
 ### 选项说明：
 
-custom tag when snapshot:  在生成lua镜像的时候, 访问到lua函数, table对象的时候，会回调到snapshot.lua 里的对应函数，此时可以参考已有代码，对该对象做标记， 方便在后面diff结果时，容易判断是哪个对象泄露。
-filter require:  勾上则在比较结果里过滤掉require的lua表，通常来说运行过程中require到的一些表不当做泄露处理。 
+   * custom tag when snapshot:  在生成lua镜像的时候, 访问到lua函数, table对象的时候，会回调到snapshot.lua 里的对应函数，此时可以参考已有代码，对该对象做标记， 方便在后面diff结果时，容易判断是哪个对象泄露。
+   * filter require:  勾上则在比较结果里过滤掉require的lua表，通常来说运行过程中require到的一些表不当做泄露处理。 
 
 
 
