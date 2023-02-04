@@ -180,7 +180,7 @@ namespace QSnapshot
     public class Snapshot
     {
         public static SnapshotData Run(SnapshotSetting setting) {
-            var L = GlobalLuaEnv.Instance.GetRawLuaL();
+            var L = Snapshot.GetLuaEnvL();
             if (L == System.IntPtr.Zero) {
                 Debug.Log("no lua env found");
                 return null;
