@@ -36,6 +36,12 @@ qsnapshot.get_func_source_and_tag = function(func)
     return result,tag
 end
 
+
+   
+qsnapshot.get_memory_usage = function()
+    return math.floor(collectgarbage("count"))
+end
+
 -------------------------------------------------------------------------
 ------------below functions can be modified for tagging objects you need
 
@@ -77,8 +83,4 @@ qsnapshot.get_table_tag = function(t)
 end
 
 
-   
-qsnapshot.get_memory_usage = function()
-    return math.floor(collectgarbage("count"))
-end
 return qsnapshot

@@ -4,7 +4,7 @@
 
 unity+xlua
 
-通用于win+mac平台
+理论上通用于win+mac平台, 目前只在unity2021.3.6 + lua 5.2环境下测试过。
 
 ### 使用前准备：
 
@@ -28,29 +28,35 @@ public static LuaEnv getLuaEnv() {
 
 菜单中选中: 扩展/q-snapshot
 
-![](./docs/pic1.png)
+![](./docs/snapshot.png)
 
-![](./docs/pic2.png)
+![](./docs/diff.png)
 
 
 镜像对比后会把结果输出一个临时文件txt，并自动打开。
+
 
 结果大概如下：
 
 ```
 summary:
-leak objects count:105
+leak objects count:13
+filter required count:31
 
 
-leak:[t]105553238428864
-<--([val]_attachLayers)--[t]105553173003328<--([val]loaded)--[t]105553173002176<--([upv])--[f]func:=[C]&line:-1<--([val]require)--[t]105553173001536<--([val][n]7)--[R]
+leak:[t]105553926394368
+<--([val]FairyGUI.ScrollPane)--[R]
+
+
+
+leak:[t]105553927449984
+<--([val]time_1675502823)--[t]105553931877376<--([val]_targetEventPair)--[t]package.loaded[global.fire]<--([val]global.fire)--[t]package.loaded
+
 ```
 
 对这个泄露对象的解读是这样的：
 
-从最右边往左看， R(registry)表开始，
-R[7]['require']是一个匿名函数,它的upvalue里匿名引用了table(105553173002176), 假设table为t,
-那么t['loaded]['_attachLayers'] 指向了被泄露对象 [t]105553238428864
+从最右边往左看，package.loaded[global.fire] 指向了一张表，这个表有个key叫  _targetEventPair, 通过该key找到的value是表[t]105553931877376， 这张表有个key=time_1675502823，正是这个key引用的值泄露了。
 
 
 ### 格式说明
@@ -66,12 +72,19 @@ R[7]['require']是一个匿名函数,它的upvalue里匿名引用了table(105553
    * metatable引用([meta])
 
 对象的取值：
-   * [t]表示table， 特殊情况下如果table含有 __class_name这个key, 将自动识别为[class]
+   * [t]表示table
    * [u]表示userdata
    * [f]表示函数
 
+一些特殊的表： 
+   * R: registry表
+   * package.loaded: require过的对象都会放在这个全局表里
 
 
+### 选项说明：
+
+custom tag when snapshot:  在生成lua镜像的时候, 访问到lua函数, table对象的时候，会回调到snapshot.lua 里的对应函数，此时可以参考已有代码，对该对象做标记， 方便在后面diff结果时，容易判断是哪个对象泄露。
+filter require:  勾上则在比较结果里过滤掉require的lua表，通常来说运行过程中require到的一些表不当做泄露处理。 
 
 
 
